@@ -10,10 +10,6 @@ class UserReadViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = CustomUser.objects.all()
     serializer_class = CustomUserReadSerializer
 
-class UserViewSet(viewsets.ModelViewSet):
-    queryset = CustomUser.objects.all()
-    serializer_class = CustomUserSerializer
-
 class UserView(APIView):
     def get_object(self, pk):
         return get_object_or_404(CustomUser, pk=pk)

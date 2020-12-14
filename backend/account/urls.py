@@ -1,8 +1,6 @@
 from django.urls import path
 from rest_framework import renderers
-from .views import UserReadViewSet, UserViewSet
-from . import views
-
+from .views import UserReadViewSet, UserView
 
 user_list = UserReadViewSet.as_view({
     'get': 'list'
@@ -12,10 +10,8 @@ user_detail = UserReadViewSet.as_view({
 })
 
 urlpatterns = [
-    path('user_all/', user_list, name='user-list'),
-    path('user_detail/<int:pk>/', user_detail, name='user-detail'),
-    path('user_add/', views.UserView.as_view()),
-    path('user_modify/<int:pk>/', views.UserView.as_view()),
-    path('user_delete/<int:pk>/', views.UserView.as_view()),
+    path('info/', user_list, name='user-list'),
+    path('info/<int:pk>/', user_detail, name='user-detail'),
+    path('add', UserView.as_view()),
+    path('modify/<int:pk>', UserView.as_view()),
 ]
-
