@@ -15,11 +15,14 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
+from django.conf.urls.static import static
+from django.conf import settings
 from rest_framework.urlpatterns import format_suffix_patterns
 from rest_framework import routers
 from rest_framework.documentation import include_docs_urls
 from api import views
 from snippets import views
+
 
 docs_view = include_docs_urls( title='drf API', description='API document' )
 
@@ -39,5 +42,5 @@ urlpatterns = [
     path('api/docs', docs_view),
 ]
 
-
+urlpatterns += static(settings.IMAGE_URL, document_root=settings.IMAGE_ROOT)
 urlpatterns = format_suffix_patterns(urlpatterns)

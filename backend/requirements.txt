@@ -4,6 +4,7 @@ pytz==2020.4
 sqlparse==0.4.1
 djangorestframework
 django-cors-headers
+django-imagekit
 gunicorn
 pygments
 psycopg2
@@ -11,3 +12,4 @@ markdown
 django-filter
 drf-yasg
 Pillow
+pilkit

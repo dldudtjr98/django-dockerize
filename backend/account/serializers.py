@@ -14,8 +14,10 @@ class CustomUserReadSerializer(serializers.ModelSerializer):
 class CustomUserSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user = CustomUser(
+            user_id = validated_data['user_id'],
             email = validated_data['email'],
-            name = validated_data['name']
+            name = validated_data['name'],
+            nickname = validated_data['nickname']
         )
         user.set_password(validated_data['password'])
         user.save()
@@ -30,5 +32,5 @@ class CustomUserSerializer(serializers.ModelSerializer):
         
     class Meta:
         model = CustomUser
-        exclude = ['is_admin', 'last_login',]
+        exclude = ['is_admin', 'last_login', 'reg_time']
         extra_kwargs = {"password" : {"write_only" : True}}

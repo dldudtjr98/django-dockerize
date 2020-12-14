@@ -12,6 +12,7 @@ class UserCreationForm(forms.ModelForm):
     """A form for creating new users. Includes all the requiredname
     fields, plus a repeated password."""
     email = forms.CharField(label='이메일 주소', widget=forms.TextInput)
+    user_id = forms.CharField(label='ID', widget=forms.TextInput)
     password1 = forms.CharField(label='비밀번호', widget=forms.PasswordInput)
     password2 = forms.CharField(label='비밀번호 확인', widget=forms.PasswordInput)
     name = forms.CharField(label='이름', widget=forms.TextInput)

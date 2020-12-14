@@ -43,7 +43,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'drf_yasg',
     'snippets.apps.SnippetsConfig',
-    'account'
+    'account',
+    'imagekit',
 ]
 
 MIDDLEWARE = [
@@ -148,3 +149,6 @@ USE_TZ = True
 STATIC_URL = '/backend-static/'
 
 STATIC_ROOT = os.path.join(ROOT_DIR, 'backend/static')
+
+IMAGE_URL = '/api/image/'
+IMAGE_ROOT = os.path.join(ROOT_DIR, 'backend/static/image')

@@ -9,8 +9,8 @@ ENV DJANGO_ALLOWED_HOSTS $DJANGO_ALLOWED_HOSTS
 ENV DJANGO_SECRET_KEY $DJANGO_SECRET_KEY
 ENV DJANGO_CORS_ORIGIN_WHITELIST $DJANGO_CORS_ORIGIN_WHITELIST
 
+COPY . /backend
 WORKDIR /backend
-COPY requirements.txt /backend/
 EXPOSE 8000
 RUN pip install --no-cache-dir -r requirements.txt
 ADD /start-server.sh /backend/start-server.sh
