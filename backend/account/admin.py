@@ -11,15 +11,17 @@ from account.models import CustomUser
 class UserCreationForm(forms.ModelForm):
     """A form for creating new users. Includes all the requiredname
     fields, plus a repeated password."""
-    user_id = forms.CharField(label="ID", widget=forms.TextInput)
+    email = forms.CharField(label='이메일 주소', widget=forms.TextInput)
     password1 = forms.CharField(label='비밀번호', widget=forms.PasswordInput)
     password2 = forms.CharField(label='비밀번호 확인', widget=forms.PasswordInput)
     name = forms.CharField(label='이름', widget=forms.TextInput)
-    nickname= forms.CharField(label='닉네임', widget=forms.TextInput)
+    is_admin = forms.BooleanField(label='최고관리자', widget=forms.CheckboxInput)
+    is_staff = forms.BooleanField(label='관리자', widget=forms.CheckboxInput)
+    is_active = forms.BooleanField(label='활성화', widget=forms.CheckboxInput)
 
     class Meta:
         model = CustomUser
-        fields = ('user_id', 'user_id', 'name', 'email', 'nickname', 'profile_image')
+        fields = ('email', 'name', 'is_staff', 'is_active',)
 
     def clean_password2(self):
         # Check that the two password entries match
@@ -47,13 +49,13 @@ class UserChangeForm(forms.ModelForm):
 
     class Meta:
         model = CustomUser
-        fields = ('user_id', 'password', 'name', 'email', 'nickname', 'profile_image', 'is_active', 'is_admin')
+        fields = ('name', 'email', 'is_active', 'is_staff', 'is_admin')
 
-    def clean_password(self):
+    #def clean_password(self):
         # Regardless of what the user provides, return the initial value.
         # This is done here, rather than on the field, because the
         # field does not have access to the initial value
-        return self.initial["password"]
+        #return self.initial["password"]
 
 
 class UserAdmin(BaseUserAdmin):
@@ -64,24 +66,22 @@ class UserAdmin(BaseUserAdmin):
     # The fields to be used in displaying the User model.
     # These override the definitions on the base UserAdmin
     # that reference specific fields on auth.User.
-    list_display = ('user_id', 'name', 'email', 'last_login', 'date_joined', 'is_admin', 'mail_receive', 'note_receive')
+    list_display = ('email', 'name', 'last_login', 'is_admin', 'is_staff', 'is_active')
     list_filter = ('is_admin',)
     fieldsets = (
-        (None, {'fields': ('user_id', 'password', 'nickname')}),
         ('개인정보', {'fields': ('name', 'email')}),
-        ('수신여부', {'fields': ('mail_receive','note_receive',)}),
-        ('권한', {'fields': ('is_admin',)}),
+        ('권한', {'fields': ('is_admin', 'is_staff', 'is_active')}),
     )
     # add_fieldsets is not a standard ModelAdmin attribute. UserAdmin
     # overrides get_fieldsets to use this attribute when creating a user.
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('user_id', 'password1', 'password2', 'name', 'nickname', 'email'),
+            'fields': ('email', 'password1', 'password2', 'name', 'is_staff', 'is_admin'),
         }),
     )
-    search_fields = ('user_id', 'name', 'email')
-    ordering = ('date_joined',)
+    search_fields = ('name', 'email')
+    ordering = ('email',)
     filter_horizontal = ()
 
 

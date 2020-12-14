@@ -1,7 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import (
-    AbstractBaseUser, BaseUserManager, PermissionsMixin
+    AbstractBaseUser, BaseUserManager
 )
+from django.utils.translation import ugettext_lazy as _
 
 
 def profile_directory_path(instance, filename):
@@ -9,87 +10,94 @@ def profile_directory_path(instance, filename):
 
 class UserManager(BaseUserManager):
 
-    use_in_migrations = True
-    def create_user(self, user_id, email, name, nickname, profile_image, password=None):
+    def create_user(self, email, name, password=None):
+        if not email:
+            raise ValueError("User must have an email")
+        if not password:
+            raise ValueError("User must have a password")
+        if not name:
+            raise ValueError("User must have a name")
 
-        if not user_id :
-            raise ValueError('must have user id')
         user = self.model(
-            user_id = user_id,
-            name = name,
-            email = self.normalize_email(email),
-            nickname = nickname,
-            profile_image = profile_image,
+            email=self.normalize_email(email)
         )
-        user.set_password(password)
+        user.name = name
+        user.set_password(password)  # change password to hash
+        user.is_admin = False
+        user.is_staff = False
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, user_id, email, name, nickname, password):        
-       
-        user = self.create_user(
-            user_id = user_id,
-            name = name,
-            email = self.normalize_email(email),
-            nickname = nickname,            
-            password = password,
-            profile_image = '',
-        )        
+    def create_staffuser(self, email, name, password=None):
+        if not email:
+            raise ValueError("User must have an email")
+        if not password:
+            raise ValueError("User must have a password")
+        if not name:
+            raise ValueError("User must have a name")
+
+        user = self.model(
+            email=self.normalize_email(email)
+        )
+        user.name = name
+        user.set_password(password)  # change password to hash
+        user.is_admin = False
+        user.is_staff = True
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, email, name, password=None):
+        if not email:
+            raise ValueError("User must have an email")
+        if not password:
+            raise ValueError("User must have a password")
+        if not name:
+            raise ValueError("User must have a name")
+
+        user = self.model(
+            email=self.normalize_email(email)
+        )
+        user.name = name
+        user.set_password(password)  # change password to hash
         user.is_admin = True
-        user.is_superuser = True
+        user.is_staff = True
         user.save(using=self._db)
         return user
 
-class CustomUser(AbstractBaseUser, PermissionsMixin):    
+
+class CustomUser(AbstractBaseUser):    
+    ADMIN = 'admin'
+    STAFF = 'staff'
+    STATUS = [
+        (ADMIN, _('Admin User')),
+        (STAFF, _('Staff User')),
+    ]
+    email = models.EmailField(_('email address'), unique=True)
+    name = models.CharField(_('name'), max_length=30)
     
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)  # a admin user; non super-user
+    is_admin = models.BooleanField(default=False)
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['name']
+
     objects = UserManager()
-    
-    user_id = models.CharField(
-        max_length=15,
-        null=False,
-        unique=True,
-        verbose_name='ID',
-    )
-    name = models.CharField(
-        max_length=20,
-        null=False,
-        verbose_name='이름',
-    )
-    email = models.EmailField(        
-        max_length=255,
-        unique=True,
-        verbose_name='이메일',
-    )    
-    nickname = models.CharField(
-        max_length=20,
-        null=False,
-        unique=True,
-        verbose_name='닉네임',
-    )
-    profile_image = models.ImageField(
-        default='static/image/profile/user_testman_test',
-        upload_to=profile_directory_path,
-        verbose_name='프로필사진',
-    )
-    is_active = models.BooleanField(default=True, verbose_name='활성화') # necessary
-    is_admin = models.BooleanField(default=False, verbose_name='관리자') # necessary
-    note_receive = models.BooleanField(default=True, verbose_name='쪽지수신')
-    mail_receive = models.BooleanField(default=True, verbose_name='메일수신')
-    date_joined = models.DateTimeField(auto_now_add=True, verbose_name='가입일자')
-    last_login = models.DateTimeField(verbose_name='마지막 로그인일자')
-    USERNAME_FIELD = 'user_id'
-    REQUIRED_FIELDS = ['name', 'email', 'nickname']
 
-    def has_module_perms(self, app_label):
-        return self.is_admin
+    @staticmethod
+    def has_perm(perm, obj=None):
+        # "Does the user have a specific permission?"
+        # Simplest possible answer: Yes, always
+        return True
 
-    def has_perm(self, perm, obj=None):
-        return self.is_admin
+    @staticmethod
+    def has_module_perms(app_label):
+        # "Does the user have permissions to view the app `app_label`?"
+        # Simplest possible answer: Yes, always
+        return True
 
-    @property
-    def is_staff(self):
-        return self.is_admin
-
+    def __str__(self):
+        return "{}".format(self.email)
 
     class Meta:
         db_table = 'account_custom_user'

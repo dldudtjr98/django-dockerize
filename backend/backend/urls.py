@@ -32,6 +32,7 @@ router = routers.DefaultRouter()
 urlpatterns = [
     path('api/admin', admin.site.urls),
     path('api/snippets/', include('snippets.urls')),
+    path('api/account/', include('account.urls')),
     #path('api/', views.Article.as_view()),
     #path('api/', include(router.urls)),
     path('api/api-auth/', include('rest_framework.urls', namespace='rest_framework')),
