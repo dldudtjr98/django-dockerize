@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import CustomUser
+from .models import CustomUser, CustomGroup
 
 
 class CustomUserReadSerializer(serializers.ModelSerializer):
@@ -10,6 +10,7 @@ class CustomUserReadSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = '__all__'
         extra_kwargs = {"password" : {"write_only" : True}} # password always write_only
+
 
 class CustomUserSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
@@ -34,3 +35,11 @@ class CustomUserSerializer(serializers.ModelSerializer):
         model = CustomUser
         exclude = ['is_admin', 'last_login', 'reg_time']
         extra_kwargs = {"password" : {"write_only" : True}}
+
+
+class CustomGroupSerializer(serializers.ModelSerializer):
+    def create(self, validated_data):
+        
+
+    class Meta:
+        model = CustomGroup

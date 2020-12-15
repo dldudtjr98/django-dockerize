@@ -154,3 +154,5 @@ IMAGE_ROOT = os.path.join(ROOT_DIR, 'backend/static/image')
 
 PROFILE_URL = '/api/image/profile/'
 DEFAULT_PROFILE_IMAGE = 'user_default.png'
+
+DEFAULT_GROUP = '준회원'

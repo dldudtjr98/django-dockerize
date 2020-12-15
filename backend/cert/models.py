@@ -74,6 +74,16 @@ class UserManager(BaseUserManager):
         return user
 
 
+class CustomGroup(models.Model):
+    name = models.CharField(_('group_name'), max_length=50)
+    objects = models.Manager()
+
+    class Meta:
+        db_table = 'cert_custom_group'
+        verbose_name = '그룹'
+        verbose_name_plural = '그룹들'
+
+
 class CustomUser(AbstractBaseUser):    
     ADMIN = 'admin'
     STAFF = 'staff'
@@ -85,6 +95,7 @@ class CustomUser(AbstractBaseUser):
     email = models.EmailField(_('email address'), unique=True)
     name = models.CharField(_('name'), max_length=30)
     nickname = models.CharField(_('nickname'), max_length=10, unique=True)
+    group = models.ManyToManyField(CustomGroup, through='UserGroup')
     profile_image = models.ImageField( #default image in app/static/image/profile
         _('profile_image'), 
         upload_to=profile_directory_path, 
@@ -94,12 +105,21 @@ class CustomUser(AbstractBaseUser):
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)  # a admin user; non super-user
     is_admin = models.BooleanField(default=False)
-    reg_time = models.DateTimeField(_('register_time'),auto_now_add=True)
+    reg_time = models.DateTimeField(_('register_time'), auto_now_add=True)
 
     USERNAME_FIELD = 'user_id'
     REQUIRED_FIELDS = ['name', 'email',]
 
     objects = UserManager()
+
+    def save(self, *args, **kwargs):
+        if not self.id:
+            super(CustomUser, self).save(*args, **kwargs)
+        if CustomUser.objects.filter(group=None): #if group is empty
+            group_init = CustomGroup.objects.get(name=settings.DEFAULT_GROUP)
+            self.group.add(group_init)
+            
+        super(CustomUser, self).save(*args, **kwargs)
 
     @staticmethod
     def has_perm(perm, obj=None):
@@ -120,3 +140,11 @@ class CustomUser(AbstractBaseUser):
         db_table = 'cert_custom_user'
         verbose_name = '유저'
         verbose_name_plural = '유저들'
+
+
+class UserGroup(models.Model): #for many to many
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True)
+    group = models.ForeignKey(CustomGroup, on_delete=models.CASCADE, null=True)
+
+    class Meta:
+        db_table = 'cert_custom_user_group'
