@@ -1,11 +1,11 @@
 from django.urls import path
 from rest_framework import renderers
-from .views import UserReadViewSet, UserView
+from .views import UserView, GroupView
 
-
-user_list = UserReadViewSet.as_view({'get': 'list'})
 
 urlpatterns = [
     path('member', UserView.as_view()),
     path('member/<int:pk>', UserView.as_view()),
+    path('group', GroupView.as_view()),
+    path('group/<int:pk>', GroupView.as_view()),
 ]

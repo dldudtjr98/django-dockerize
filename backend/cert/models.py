@@ -10,7 +10,7 @@ def profile_directory_path(instance, filename):
     return settings.PROFILE_URL + f'user_{instance.user_id}/{filename}.jpg'
 
 class UserManager(BaseUserManager):
-    def create_user(self, user_id, email, name, password=None):
+    def create_user(self, user_id, email, nickname, name, password=None):
         if not user_id:
             raise ValueError("User must have a user id")
         if not email:
@@ -25,13 +25,14 @@ class UserManager(BaseUserManager):
         )
         user.user_id = user_id
         user.name = name
+        user.nickname = nickname
         user.set_password(password)  # change password to hash
         user.is_admin = False
         user.is_staff = False
         user.save(using=self._db)
         return user
 
-    def create_staffuser(self, user_id, email, name, password=None):
+    def create_staffuser(self, user_id, email, name, nickname, password=None):
         if not user_id:
             raise ValueError("User must have a user id")
         if not email:
@@ -46,13 +47,14 @@ class UserManager(BaseUserManager):
         )
         user.user_id = user_id
         user.name = name
+        user.nickname = nickname
         user.set_password(password)  # change password to hash
         user.is_admin = False
         user.is_staff = True
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, user_id, email, name, password=None):
+    def create_superuser(self, user_id, email, name, nickname, password=None):
         if not user_id:
             raise ValueError("User must have a user id")
         if not email:
@@ -67,6 +69,7 @@ class UserManager(BaseUserManager):
         )
         user.user_id = user_id
         user.name = name
+        user.nickname = nickname
         user.set_password(password)  # change password to hash
         user.is_admin = True
         user.is_staff = True
@@ -75,8 +78,12 @@ class UserManager(BaseUserManager):
 
 
 class CustomGroup(models.Model):
-    name = models.CharField(_('group_name'), max_length=50)
+    name = models.CharField(_('group_name'), max_length=50, unique=True)
+    description = models.CharField(_('description'), max_length=100, blank=True, default='')
     objects = models.Manager()
+
+    def __str__(self):
+        return f'{self.name}'
 
     class Meta:
         db_table = 'cert_custom_group'
@@ -108,33 +115,21 @@ class CustomUser(AbstractBaseUser):
     reg_time = models.DateTimeField(_('register_time'), auto_now_add=True)
 
     USERNAME_FIELD = 'user_id'
-    REQUIRED_FIELDS = ['name', 'email',]
+    REQUIRED_FIELDS = ['name', 'email', 'nickname']
 
     objects = UserManager()
 
     def save(self, *args, **kwargs):
         if not self.id:
             super(CustomUser, self).save(*args, **kwargs)
-        if CustomUser.objects.filter(group=None): #if group is empty
+        if CustomUser.objects.filter(group=None) and CustomUser.objects.filter(is_admin=False): #if group is empty and not admin
             group_init = CustomGroup.objects.get(name=settings.DEFAULT_GROUP)
             self.group.add(group_init)
             
         super(CustomUser, self).save(*args, **kwargs)
 
-    @staticmethod
-    def has_perm(perm, obj=None):
-        # "Does the user have a specific permission?"
-        # Simplest possible answer: Yes, always
-        return True
-
-    @staticmethod
-    def has_module_perms(app_label):
-        # "Does the user have permissions to view the app `app_label`?"
-        # Simplest possible answer: Yes, always
-        return True
-
     def __str__(self):
-        return "{}".format(self.user_id)
+        return f'{self.user_id}'
 
     class Meta:
         db_table = 'cert_custom_user'

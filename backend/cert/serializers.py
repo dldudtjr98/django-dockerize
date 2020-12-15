@@ -1,18 +1,31 @@
-from rest_framework import serializers
+from rest_framework import serializers, status
+from rest_framework.response import Response
 from .models import CustomUser, CustomGroup
 
 
-class CustomUserReadSerializer(serializers.ModelSerializer):
+class CustomGroupSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
-        return CustomUser.objects.create(**validated_data)
+        group = CustomGroup(
+            name = validated_data['name'],
+            description = validated_data['description']
+        )
+        group.save()
+        return group
+
+    def update(self, instance, validated_data):
+        group = super().update(instance, validated_data)
+        group.save()
+        return group
 
     class Meta:
-        model = CustomUser
-        fields = '__all__'
-        extra_kwargs = {"password" : {"write_only" : True}} # password always write_only
+        model = CustomGroup
+        optional_fields = ['description',]
+        fields = "__all__"
 
 
 class CustomUserSerializer(serializers.ModelSerializer):
+    group = CustomGroupSerializer(read_only=True, many=True)
+
     def create(self, validated_data):
         user = CustomUser(
             user_id = validated_data['user_id'],
@@ -24,22 +37,14 @@ class CustomUserSerializer(serializers.ModelSerializer):
         user.save()
         return user
 
-    def update(self, instance, validate_data):
-        user = super().update(instance, validate_data)
-        if 'password' in validate_data: # patch password
-            user.set_password(validate_data['password'])
+    def update(self, instance, validated_data):
+        user = super().update(instance, validated_data)
+        if 'password' in validated_data: # patch password
+            user.set_password(validated_data['password'])
         user.save()
         return user
-        
+
     class Meta:
         model = CustomUser
         exclude = ['is_admin', 'last_login', 'reg_time']
         extra_kwargs = {"password" : {"write_only" : True}}
-
-
-class CustomGroupSerializer(serializers.ModelSerializer):
-    def create(self, validated_data):
-        
-
-    class Meta:
-        model = CustomGroup
