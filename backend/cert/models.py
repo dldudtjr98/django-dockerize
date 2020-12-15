@@ -4,15 +4,12 @@ from django.contrib.auth.models import (
 )
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
-from imagekit.models import ProcessedImageField
-from imagekit.processors import ResizeToFill
 
 
 def profile_directory_path(instance, filename):
-    return f'static/image/profile/user_{instance.user_id}/{filename}.jpg'
+    return settings.PROFILE_URL + f'user_{instance.user_id}/{filename}.jpg'
 
 class UserManager(BaseUserManager):
-
     def create_user(self, user_id, email, name, password=None):
         if not user_id:
             raise ValueError("User must have a user id")
@@ -88,7 +85,10 @@ class CustomUser(AbstractBaseUser):
     email = models.EmailField(_('email address'), unique=True)
     name = models.CharField(_('name'), max_length=30)
     nickname = models.CharField(_('nickname'), max_length=10, unique=True)
-    profile_image = models.ImageField(_('profile_image'), upload_to=profile_directory_path, default=settings.IMAGE_URL+'profile/user_default.png') #default image in app/static/image/profile
+    profile_image = models.ImageField( #default image in app/static/image/profile
+        _('profile_image'), 
+        upload_to=profile_directory_path, 
+        default=settings.PROFILE_URL + settings.DEFAULT_PROFILE_IMAGE) 
     mail_service = models.BooleanField(_('mail_service'), default=True)
     note_receive = models.BooleanField(_('note_reveive'), default=True)
     is_active = models.BooleanField(default=True)
@@ -117,22 +117,6 @@ class CustomUser(AbstractBaseUser):
         return "{}".format(self.user_id)
 
     class Meta:
-        db_table = 'account_custom_user'
+        db_table = 'cert_custom_user'
         verbose_name = '유저'
         verbose_name_plural = '유저들'
-
-
-class Article(models.Model):
-    #author = models.ForeignKey(Journalist, on_delete=models.CASCADE, related_name="articles")
-    author = models.CharField(max_length=120)
-    title = models.CharField(max_length=120)
-    description = models.CharField(max_length=200)
-    body = models.TextField()
-    location = models.CharField(max_length=120)
-    publication_date = models.DateTimeField()
-    active = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True, null=True)
-    updated_at = models.DateTimeField(auto_now=True, null=True)
-
-    def __str__(self):
-        return f"{ self.author } { self.title }"

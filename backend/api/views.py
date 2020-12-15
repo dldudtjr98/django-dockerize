@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from api.serializers import UserSerializer, GroupSerializer, ArticleSerializer
 from api.models import Article
-from account.models import CustomUser
+from cert.models import CustomUser
 
 
 class ArticleList(APIView):

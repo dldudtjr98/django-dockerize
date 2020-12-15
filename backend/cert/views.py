@@ -14,6 +14,15 @@ class UserView(APIView):
     def get_object(self, pk):
         return get_object_or_404(CustomUser, pk=pk)
 
+    def get(self, request, pk=None, format=None):
+        if pk is None:
+            user_object = CustomUser.objects.all()
+            serializer = CustomUserSerializer(user_object, many=True)
+        else:
+            user_object = self.get_object(pk)
+            serializer = CustomUserSerializer(user_object)
+        return Response(serializer.data)
+
     def post(self,request):
         serializer = CustomUserSerializer(data=request.data)
         if serializer.is_valid():

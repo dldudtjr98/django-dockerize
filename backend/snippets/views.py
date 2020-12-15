@@ -14,7 +14,7 @@ from rest_framework.reverse import reverse
 from .permissions import IsOwnerOrReadOnly
 from .models import Snippet
 from .serializers import SnippetSerializer, UserSerializer
-from account.models import CustomUser
+from cert.models import CustomUser
 
 
 @api_view(('GET',))

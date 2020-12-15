@@ -23,7 +23,7 @@ class Snippet(models.Model):
         max_length=100,
     )
     owner = models.ForeignKey(
-        'account.CustomUser', 
+        'cert.CustomUser', 
         related_name='snippets', 
         on_delete=models.CASCADE
     )

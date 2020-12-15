@@ -1,7 +1,7 @@
 from django.contrib.auth.models import Group
 from rest_framework import serializers
 from api.models import Article
-from account.models import CustomUser
+from cert.models import CustomUser
 
 class ArticleSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)

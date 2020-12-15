@@ -43,8 +43,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'drf_yasg',
     'snippets.apps.SnippetsConfig',
-    'account',
-    'imagekit',
+    'cert',
 ]
 
 MIDDLEWARE = [
@@ -112,7 +111,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 # Custom Model
-AUTH_USER_MODEL = 'account.CustomUser'
+AUTH_USER_MODEL = 'cert.CustomUser'
 
 REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
@@ -152,3 +151,6 @@ STATIC_ROOT = os.path.join(ROOT_DIR, 'backend/static')
 
 IMAGE_URL = '/api/image/'
 IMAGE_ROOT = os.path.join(ROOT_DIR, 'backend/static/image')
+
+PROFILE_URL = '/api/image/profile/'
+DEFAULT_PROFILE_IMAGE = 'user_default.png'

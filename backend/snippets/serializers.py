@@ -1,7 +1,7 @@
 from django.contrib.auth.models import Group
 from rest_framework import serializers
 from snippets.models import Snippet
-from account.models import CustomUser
+from cert.models import CustomUser
 
 
 class SnippetSerializer(serializers.HyperlinkedModelSerializer):
