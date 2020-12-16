@@ -63,7 +63,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CustomUser
-        exclude = ['is_admin', 'last_login', 'reg_time']
+        exclude = ['is_admin', 'is_staff']
         extra_kwargs = {"password" : {"write_only" : True}}
 
 

@@ -102,32 +102,4 @@ class GroupView(APIView):
         group_object = self.get_object(pk)
         group_object.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-class UserGroupView(APIView):
-    def del_user_all_group(self, data):
-        groups = UserGroup.objects.filter(user=data['user_id'])
-        groups.delete()
-
-    def get_filtered_data(self, data): # delete exist combination in request data
-        filtered = []
-        combination = UserGroup.objects.filter(user=data['user_id'])
-        for user_group in combination.values():
-            if user_group['group_id'] != data['group_id']:
-                filtered.append(data)
-        return filtered
-
-    def post(self, request, format=None):
-        #serializer = UserGroupSerializer(data=request.data)
-        filtered = self.get_filtered_data(request.data)
-        print(filtered)
-
-
-        
-        '''
-        if serializer.is_valid():
-            serializer.save()
-            return Response(status=status.HTTP_201_CREATED)
-            '''
-        return Response(status=status.HTTP_400_BAD_REQUEST)
         

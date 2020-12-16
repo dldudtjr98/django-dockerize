@@ -128,6 +128,18 @@ class CustomUser(AbstractBaseUser):
             
         super(CustomUser, self).save(*args, **kwargs)
 
+    @staticmethod
+    def has_perm(perm, obj=None):
+        # "Does the user have a specific permission?"
+        # Simplest possible answer: Yes, always
+        return True
+
+    @staticmethod
+    def has_module_perms(app_label):
+        # "Does the user have permissions to view the app `app_label`?"
+        # Simplest possible answer: Yes, always
+        return True
+
     def __str__(self):
         return f'{self.user_id}'
 
