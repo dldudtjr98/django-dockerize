@@ -1,6 +1,6 @@
 from rest_framework import serializers, status
 from rest_framework.response import Response
-from .models import CustomUser, CustomGroup
+from .models import CustomUser, CustomGroup, UserGroup
 
 
 class CustomGroupSerializer(serializers.ModelSerializer):
@@ -20,11 +20,27 @@ class CustomGroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomGroup
         optional_fields = ['description',]
-        fields = "__all__"
+        fields = '__all__'
+
+
+class UserGroupSerializer(serializers.ModelSerializer):
+    def create(self, validated_data):
+        print(validated_data)
+        user_group = UserGroup(
+            group = validated_data['group'],
+            user = validated_data['user']
+        )
+        print(user_group)
+        user_group.save()
+        return user_group
+
+    class Meta:
+        model = UserGroup
+        fields = '__all__'
 
 
 class CustomUserSerializer(serializers.ModelSerializer):
-    group = CustomGroupSerializer(read_only=True, many=True)
+    group = CustomGroupSerializer(read_only=False, many=True)
 
     def create(self, validated_data):
         user = CustomUser(
@@ -39,6 +55,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         user = super().update(instance, validated_data)
+
         if 'password' in validated_data: # patch password
             user.set_password(validated_data['password'])
         user.save()
@@ -48,3 +65,5 @@ class CustomUserSerializer(serializers.ModelSerializer):
         model = CustomUser
         exclude = ['is_admin', 'last_login', 'reg_time']
         extra_kwargs = {"password" : {"write_only" : True}}
+
+

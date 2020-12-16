@@ -140,6 +140,7 @@ class CustomUser(AbstractBaseUser):
 class UserGroup(models.Model): #for many to many
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True)
     group = models.ForeignKey(CustomGroup, on_delete=models.CASCADE, null=True)
+    objects = models.Manager()
 
     class Meta:
         db_table = 'cert_custom_user_group'
