@@ -29,15 +29,3 @@ class ArticleSerializer(serializers.ModelSerializer):
         instance.active = validated_data.get('active', instance.active)
         instance.save()
         return instance
-        
-
-class UserSerializer(serializers.HyperlinkedModelSerializer):
-    class Meta:
-        model = CustomUser
-        fields = ['url', 'username', 'email', 'groups']
-
-
-class GroupSerializer(serializers.HyperlinkedModelSerializer):
-    class Meta:
-        model = Group
-        fields = ['url', 'name']

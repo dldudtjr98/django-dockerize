@@ -7,6 +7,11 @@ from .serializers import CustomUserSerializer, CustomGroupSerializer, UserGroupS
 
 
 class UserView(APIView):
+    """
+        Member API
+
+        ---
+    """
     def del_user_all_group(self, pk):
         group = UserGroup.objects.filter(user_id=pk)
         group.delete()
