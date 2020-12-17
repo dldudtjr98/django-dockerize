@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework import status, viewsets
+from rest_framework import status
 from .models import CustomUser, CustomGroup, UserGroup
 from .serializers import CustomUserSerializer, CustomGroupSerializer, UserGroupSerializer
 
@@ -19,7 +19,7 @@ class UserView(APIView):
     def data_to_validate(self, groups, pk):
         validated_data = []
         for group in groups:
-            user_group = {"group":group, "user":pk}
+            user_group = {"group": group, "user": pk}
             validated_data.append(user_group)
         return validated_data
 
@@ -51,7 +51,7 @@ class UserView(APIView):
             user_group_data = self.data_to_validate(request.data['groups'], pk)
             usergroup_serializer = UserGroupSerializer(data=user_group_data, many=True)
             if serializer.is_valid() and usergroup_serializer.is_valid():
-                usergroup_serializer.save() # cause if user doesn't have group, has DEFAULT GROUP
+                usergroup_serializer.save()  # cause if user doesn't have group, has DEFAULT GROUP
                 serializer.save()
                 return Response(status=status.HTTP_201_CREATED, data=serializer.data)
             return Response(status=status.HTTP_400_BAD_REQUEST, data=serializer.errors)
@@ -107,4 +107,3 @@ class GroupView(APIView):
         group_object = self.get_object(pk)
         group_object.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-        

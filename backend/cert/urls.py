@@ -1,5 +1,4 @@
 from django.urls import path
-from rest_framework import renderers
 from .views import UserView, GroupView
 
 

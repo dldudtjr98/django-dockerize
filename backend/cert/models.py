@@ -79,11 +79,7 @@ class UserManager(BaseUserManager):
 
 
 class CustomGroup(models.Model):
-    name = models.CharField(
-        _('그룹명'),
-        max_length=50,
-        unique=True
-    )
+    name = models.CharField(_('그룹명'), max_length=50, unique=True)
     description = models.CharField(
         _('설명'),
         max_length=100,

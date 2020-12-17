@@ -23,7 +23,11 @@ class CurriculumDivision(models.Model):
 class Curriculum(models.Model):
     founder = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     title = models.CharField(_('제목'), max_length=50, unique=True)
-    classification = models.ForeignKey(CurriculumDivision, on_delete=models.SET_NULL, null=True)
+    division = models.ForeignKey(
+        CurriculumDivision,
+        on_delete=models.SET_DEFAULT,
+        default=1  # have to set pk1 CurriculumDivision
+    )
     password = models.CharField(_('수강비밀번호'), max_length=10)
     thumbnail = models.ImageField(  # default image in app/static/image/profile
         _('섬네일이미지'),
