@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'drf_yasg',
     'snippets.apps.SnippetsConfig',
     'cert',
+    'education',
 ]
 
 MIDDLEWARE = [
@@ -158,13 +159,15 @@ USE_TZ = True
 #    STATIC_DIR,
 # ]
 STATIC_URL = '/backend-static/'
-
 STATIC_ROOT = os.path.join(ROOT_DIR, 'backend/static')
 
 IMAGE_URL = '/api/image/'
 IMAGE_ROOT = os.path.join(ROOT_DIR, 'backend/static/image')
 
-PROFILE_URL = '/api/image/profile/'
+THUMBNAIL_URL = IMAGE_URL + 'thumbnail/'
+DEFAULT_THUMBNAIL_IMAGE = 'thumbnail_default.png'
+
+PROFILE_URL = IMAGE_URL + 'profile/'
 DEFAULT_PROFILE_IMAGE = 'user_default.png'
 
 DEFAULT_GROUP = '준회원'
