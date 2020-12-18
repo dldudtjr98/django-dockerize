@@ -128,12 +128,12 @@ class CustomUser(AbstractBaseUser):
 
     def save(self, *args, **kwargs):
         if not self.id:
-            super(CustomUser, self).save(*args, **kwargs)
+            super().save(*args, **kwargs)
         if CustomUser.objects.filter(group=None) and CustomUser.objects.filter(is_admin=False):
             # if group is empty and not admin
             group_init = CustomGroup.objects.get(name=settings.DEFAULT_GROUP)
             self.group.add(group_init)
-        super(CustomUser, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
     @staticmethod
     def has_perm(perm, obj=None):

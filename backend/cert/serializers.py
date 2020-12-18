@@ -38,7 +38,7 @@ class UserGroupSerializer(serializers.ModelSerializer):
 
 
 class CustomUserSerializer(serializers.ModelSerializer):
-    group = CustomGroupSerializer(read_only=False, many=True)
+    group = CustomGroupSerializer(read_only=True, many=True)
 
     def create(self, validated_data):
         user = CustomUser(
