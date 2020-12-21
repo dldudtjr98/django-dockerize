@@ -12,7 +12,6 @@ class CurriculumModelTest(TestCase):
         CustomGroup.objects.create(name='세번째그룹', description='')
 
         self.user = CustomUser.objects.create(
-            id=2,
             password='1',
             user_id='testuser',
             email='dev@de1v.com',

@@ -3,7 +3,7 @@ from django.contrib.auth.models import (
     AbstractBaseUser, BaseUserManager
 )
 from django.conf import settings
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 
 def profile_directory_path(instance, filename):
@@ -127,13 +127,11 @@ class CustomUser(AbstractBaseUser):
     objects = UserManager()
 
     def save(self, *args, **kwargs):
-        if not self.id:
-            super().save(*args, **kwargs)
+        super(CustomUser, self).save(*args, **kwargs)
         if CustomUser.objects.filter(group=None) and CustomUser.objects.filter(is_admin=False):
             # if group is empty and not admin
             group_init = CustomGroup.objects.get(name=settings.DEFAULT_GROUP)
             self.group.add(group_init)
-        super().save(*args, **kwargs)
 
     @staticmethod
     def has_perm(perm, obj=None):
