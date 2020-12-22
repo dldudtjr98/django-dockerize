@@ -92,7 +92,6 @@ class EducationTests(APITestCase):
     테스트 시작
     -----------------------------------------------------------
     curriculum 분류를 삭제하면 curriculum 사라지는지
-    curriculum 시작날짜가 종료날짜보다 미래의 시간인지 확인
     """
     def test_curriculum_div_delete(self):
         self.curriculum_div_one.delete()
@@ -100,9 +99,6 @@ class EducationTests(APITestCase):
 
         self.curriculum_div_two.delete()
         assert Curriculum.objects.count() == 0
-
-    def test_curriculum_end_date(self):
-
     """
     lecture 분류를 삭제하면 lecture 사라지는지
     lecture 삭제하면 lesson 사라지는지
@@ -129,8 +125,8 @@ class EducationTests(APITestCase):
     student 삭제
     """
     def test_curriculum_student_delete(self):
-        self.curriculum_one.student.add(self.student.id)
-        self.curriculum_two.student.add(self.student.id)
+        self.curriculum_one.students.add(self.student.id)
+        self.curriculum_two.students.add(self.student.id)
         curriculum_id = self.curriculum_one.id
         self.curriculum_one.delete()
         self.assertFalse(CurriculumStudent.objects.filter(curriculum_id=curriculum_id).exists())
@@ -174,7 +170,7 @@ class EducationTests(APITestCase):
     def test_progress_delete_lecture(self):
         self.lecture_one.delete()
         assert CurriculumProgress.objects.count() == 0
-    
+
     def test_progress_delete_lesson(self):
         self.lesson_one.delete()
         assert CurriculumProgress.objects.count() == 0

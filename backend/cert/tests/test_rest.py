@@ -42,7 +42,7 @@ class MemberTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(CustomUser.objects.count(), 3)  # with superuser and setup user
 
-    def test_create_member_except_name(self):
+    def test_create_member_no_name(self):
         url = reverse('member_without_pk')
         data = {
             'nickname': 'nicktest',
@@ -53,7 +53,7 @@ class MemberTests(APITestCase):
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_create_member_except_nick(self):
+    def test_create_member_no_nick(self):
         url = reverse('member_without_pk')
         data = {
             'name': 'testuser',
@@ -64,7 +64,7 @@ class MemberTests(APITestCase):
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_create_member_except_email(self):
+    def test_create_member_no_email(self):
         url = reverse('member_without_pk')
         data = {
             'name': 'testuser',
@@ -75,7 +75,7 @@ class MemberTests(APITestCase):
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_create_member_except_user_id(self):
+    def test_create_member_no_user_id(self):
         url = reverse('member_without_pk')
         data = {
             'name': 'testuser',
@@ -86,7 +86,7 @@ class MemberTests(APITestCase):
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_create_member_except_password(self):
+    def test_create_member_no_password(self):
         url = reverse('member_without_pk')
         data = {
             'name': 'testuser',
@@ -102,13 +102,13 @@ class MemberTests(APITestCase):
         response = self.client.get(url)
         self.assertEqual(len(response.data), 2)
 
-    def test_get_member_specific(self):
+    def test_get_member_detail(self):
         url = reverse('member_with_pk', kwargs={'pk': self.user.id})
         response = self.client.get(url)
         serialized_user = CustomUserSerializer(self.user).data
         self.assertEqual(response.data, serialized_user)
 
-    def test_patch_member_specific(self):
+    def test_patch_member_detail(self):
         url = reverse('member_with_pk', kwargs={'pk': self.user.id})
         data = {
             'name': 'testuserpatch',
@@ -116,7 +116,7 @@ class MemberTests(APITestCase):
         response = self.client.patch(url, data, format='json')
         self.assertEqual(response.data['name'], 'testuserpatch')
 
-    def test_delete_member_specific_and_group_delete(self):  # delete 후에 manytomany argument 삭제 확인
+    def test_delete_member_and_group_delete(self):  # delete 후에 manytomany argument 삭제 확인
         url = reverse('member_with_pk', kwargs={'pk': self.user.id})
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
