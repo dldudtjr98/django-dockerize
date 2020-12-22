@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.conf import settings
-from .models import CustomUser, CustomGroup
-from .serializers import CustomUserSerializer
+from cert.models import CustomUser, CustomGroup
+from cert.serializers import CustomUserSerializer
 
 
 class CurriculumModelTest(TestCase):
@@ -16,6 +16,7 @@ class CurriculumModelTest(TestCase):
             user_id='testuser',
             email='dev@de1v.com',
             name='imtest',
+            nickname='imtestnick'
         )
         self.user.set_password('123123')
         self.user.save()

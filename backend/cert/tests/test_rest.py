@@ -2,7 +2,8 @@ from django.urls import reverse
 from django.conf import settings
 from rest_framework import status
 from rest_framework.test import APITestCase
-from .models import CustomUser, CustomGroup, UserGroup
+from cert.models import CustomUser, CustomGroup, UserGroup
+from cert.serializers import CustomUserSerializer
 
 
 class MemberTests(APITestCase):
@@ -99,12 +100,13 @@ class MemberTests(APITestCase):
     def test_get_member_list(self):
         url = reverse('member_without_pk')
         response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 2)
 
     def test_get_member_specific(self):
         url = reverse('member_with_pk', kwargs={'pk': self.user.id})
         response = self.client.get(url)
-        self.assertEqual(response.data['name'], self.user.name)
+        serialized_user = CustomUserSerializer(self.user).data
+        self.assertEqual(response.data, serialized_user)
 
     def test_patch_member_specific(self):
         url = reverse('member_with_pk', kwargs={'pk': self.user.id})

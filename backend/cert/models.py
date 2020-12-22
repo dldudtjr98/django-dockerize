@@ -98,14 +98,8 @@ class CustomGroup(models.Model):
 
 
 class CustomUser(AbstractBaseUser):
-    ADMIN = 'admin'
-    STAFF = 'staff'
-    STATUS = [
-        (ADMIN, _('Admin User')),
-        (STAFF, _('Staff User')),
-    ]
     user_id = models.CharField(_('아이디'), max_length=20, unique=True)
-    email = models.EmailField(_('이메일'), unique=True, help_text='이메일이에요')
+    email = models.EmailField(_('이메일'), unique=True)
     name = models.CharField(_('이름'), max_length=30)
     nickname = models.CharField(_('닉네임'), max_length=10, unique=True)
     group = models.ManyToManyField(CustomGroup, through='UserGroup')

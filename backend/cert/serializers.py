@@ -28,7 +28,6 @@ class UserGroupSerializer(serializers.ModelSerializer):
             group=validated_data['group'],
             user=validated_data['user']
         )
-        print(user_group)
         user_group.save()
         return user_group
 
