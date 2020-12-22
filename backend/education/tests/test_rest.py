@@ -6,7 +6,7 @@ from education.models import (
     LectureDivision, Lesson, CurriculumLecture,
     CurriculumStudent, CurriculumProgress
 )
-from education.serializers import CurriculumSerializer, CurriculumStudentSerializer
+from education.serializers import CurriculumSerializer, CurriculumStudentSerializer, LectureSerializer
 from cert.models import CustomUser
 
 
@@ -72,8 +72,20 @@ class EducationRestTests(APITestCase):
         )
         self.curriculum_one.students.add(self.student_one.id)
         self.curriculum_one.students.add(self.student_two.id)
-        self.curriculum_one.lectures.add(self.lecture_one.id)
-        self.curriculum_one.lectures.add(self.lecture_two.id)
+        CurriculumLecture.objects.create(
+            curriculum_id=self.curriculum_one.id,
+            lecture_id=self.lecture_one.id,
+            start_date='2020-12-22 00:00:00',
+            end_date='2020-12-31 00:00:00',
+            ordering=1,
+        )
+        CurriculumLecture.objects.create(
+            curriculum_id=self.curriculum_one.id,
+            lecture_id=self.lecture_two.id,
+            start_date='2020-12-22 00:00:00',
+            end_date='2020-12-31 00:00:00',
+            ordering=2,
+        )
 
     """
     -------------------------------------------------------------------------
@@ -306,7 +318,7 @@ class EducationRestTests(APITestCase):
 
     """
     -------------------------------------------------------------------------
-    LECTURE POST TEST
+    LECTURE POST TEST (CURRICULUM-LECTURE)
     -------------------------------------------------------------------------
     """
     def test_create_lecture(self):  # 정상 parameter lecture
@@ -346,3 +358,85 @@ class EducationRestTests(APITestCase):
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_curriculum_charge_lecture(self):
+        url = reverse('curriculum_lecture_without_pk')
+        data = {
+            'curriculum_id': self.curriculum_two.id,
+            'lecture_id': self.lecture_one.id,
+            'start_date': '2020-12-22 00:00:00',
+            'end_date': '2020-12-31 00:00:00'
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_curriculum_charge_lecture_future_date(self):  # lecture start date가 end date보다 뒤
+        url = reverse('curriculum_lecture_without_pk')
+        data = {
+            'curriculum_id': self.curriculum_two.id,
+            'lecture_id': self.lecture_one.id,
+            'start_date': '2020-12-31 00:00:00',
+            'end_date': '2020-12-22 00:00:00'
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_curriculum_charge_lecture_no_end_date(self):  # lecture start date가 end date보다 뒤
+        url = reverse('curriculum_lecture_without_pk')
+        data = {
+            'curriculum_id': self.curriculum_two.id,
+            'lecture_id': self.lecture_one.id,
+            'start_date': '2020-12-31 00:00:00',
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_curriculum_charge_lecture_no_start_date(self):  # lecture start date가 end date보다 뒤
+        url = reverse('curriculum_lecture_without_pk')
+        data = {
+            'curriculum_id': self.curriculum_two.id,
+            'lecture_id': self.lecture_one.id,
+            'end_date': '2020-12-22 00:00:00'
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_curriculum_charge_lecture_no_curriculum(self):  # lecture start date가 end date보다 뒤
+        url = reverse('curriculum_lecture_without_pk')
+        data = {
+            'lecture_id': self.lecture_one.id,
+            'start_date': '2020-12-22 00:00:00',
+            'end_date': '2020-12-31 00:00:00'
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_curriculum_charge_lecture_no_lecture(self):
+        url = reverse('curriculum_lecture_without_pk')
+        data = {
+            'curriculum_id': self.curriculum_two.id,
+            'start_date': '2020-12-22 00:00:00',
+            'end_date': '2020-12-31 00:00:00'
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    """
+    -------------------------------------------------------------------------
+    LECTURE GET TEST (CURRICULUM-LECTURE)
+    -------------------------------------------------------------------------
+    """
+    def test_lecture_list(self):
+        url = reverse('lecture_without_pk')
+        response = self.client.get(url)
+        self.assertEqual(len(response.data), 2)
+
+    def test_lecture_detail(self):
+        url = reverse('lecture_with_pk')
+        response = self.client.get(url, kwargs={'pk': self.lecture_one.id})
+        serialized_lecture = LectureSerializer(self.lecture_one).data
+        self.assertEqual(response.status_data, serialized_lecture)
+
+    def test_lecture_lesson(self):
+        url = reverse('lecture_with_pk')
+        response = self.client.get(url, kwargs={'pk': self.lecture_one.id})

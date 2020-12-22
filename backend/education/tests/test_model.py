@@ -52,24 +52,26 @@ class EducationTests(APITestCase):
         self.lecture_one = Lecture.objects.create(
             title="강좌 첫번째",
             category=self.lecture_div_one.id,
-            difficult="심화",
+            difficult="Deep",
             public=True,
             contents="이곳은 첫번째 강좌의 내용이라고 할 수 있다."
         )
         self.lecture_two = Lecture.objects.create(
             title="강좌 두번째",
             category=self.lecture_div_two.id,
-            difficult="기초",
+            difficult="Basic",
             public=True,
             contents="이곳은 두번째 강좌의 내용이라고 할 수 있다."
         )
         self.lesson_one = Lesson.objects.create(
             title="강의 첫번째",
+            lecture=self.lecture_one.id,
             url="https://www.youtube.com/watch?v=5qap5aO4i9A",
             contents="여기는 첫번째 강의의 내용이라고 할 수 있다."
         )
         self.lesson_two = Lesson.objects.create(
             title="강의 두번째",
+            lecture=self.lecture_one.id,
             url="https://www.youtube.com/watch?v=5qap5aO4i9A",
             contents="여기는 첫번째 강의의 내용이라고 할 수 있다."
         )
@@ -82,7 +84,6 @@ class EducationTests(APITestCase):
         self.progress = CurriculumProgress.objects.create(
             student=self.student.id,
             curriculum=self.curriculum_one.id,
-            lecture=self.lecture_one.id,
             lesson=self.lesson_one.id
         )
         self.student.set_password('123123')
@@ -142,8 +143,20 @@ class EducationTests(APITestCase):
     curriculum 에 lecture 넣기
     """
     def test_curriculum_lecture_delete(self):
-        self.curriculum_one.lecture.add(self.lecture_one.id)
-        self.curriculum_two.lecture.add(self.lecture_two.id)
+        CurriculumLecture.objects.create(
+            curriculum_id=self.curriculum_one.id,
+            lecture_id=self.lecture_one.id,
+            start_date='2020-12-22 00:00:00',
+            end_date='2020-12-31 00:00:00',
+            ordering=1,
+        )
+        CurriculumLecture.objects.create(
+            curriculum_id=self.curriculum_one.id,
+            lecture_id=self.lecture_two.id,
+            start_date='2020-12-22 00:00:00',
+            end_date='2020-12-31 00:00:00',
+            ordering=2,
+        )
         curriculum_id = self.curriculum_one.id
         self.curriculum_one.delete()
         self.assertFalse(CurriculumLecture.objects.filter(curriculum_id=curriculum_id).exists())
@@ -152,9 +165,8 @@ class EducationTests(APITestCase):
         self.lecture_two.delete()
         self.assertFalse(CurriculumLecture.objects.filter(lecture_id=lecture_id).exists())
     """
-    student - curriculum - lecture - lesson table (curriculum 내 학생 학습률의 위한 table)
+    student - curriculum - lesson table (curriculum 내 학생 학습률의 위한 table)
 
-    lecture 삭제
     student 삭제
     curriculum 삭제
     lesson 삭제
@@ -165,10 +177,6 @@ class EducationTests(APITestCase):
 
     def test_progress_delete_curriculum(self):
         self.curriculum_one.delete()
-        assert CurriculumProgress.objects.count() == 0
-
-    def test_progress_delete_lecture(self):
-        self.lecture_one.delete()
         assert CurriculumProgress.objects.count() == 0
 
     def test_progress_delete_lesson(self):
