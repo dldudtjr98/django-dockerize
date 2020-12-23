@@ -4,7 +4,7 @@ from cert.models import CustomUser, CustomGroup
 from cert.serializers import CustomUserSerializer
 
 
-class CurriculumModelTest(TestCase):
+class UserModelTest(TestCase):
     @classmethod
     def setUp(self):
         CustomGroup.objects.create(name=settings.DEFAULT_GROUP, description='')

@@ -1,14 +1,16 @@
+from django.conf import settings
 from rest_framework.test import APITestCase
 from education.models import (
     Curriculum, CurriculumDivision, Lecture,
     LectureDivision, Lesson, CurriculumLecture,
     CurriculumStudent, CurriculumProgress
 )
-from cert.models import CustomUser
+from cert.models import CustomUser, CustomGroup
 
 
 class EducationTests(APITestCase):
     """
+    curriculum 개설자를 만듬 (founder)
     curriculum 분류를 만듬 (curriculum_div)
     curriculum을 만듬 (curriculum_one)
     curriculum을 하나 더 만듬 (curriculum_two)
@@ -21,12 +23,21 @@ class EducationTests(APITestCase):
     student를 만듬 (member)
     """
     def setUp(self):
-        self.curriculum_div_one = CurriculumDivision.objects.create(name="한컵 커리큘럼")
+        CustomGroup.objects.create(name=settings.DEFAULT_GROUP, description='')
+        self.founder = CustomUser.objects.create(
+            password='1',
+            user_id='founder',
+            email='de1v@de1v.com',
+            name='imfounder',
+            nickname='imfounder'
+        )
+        self.curriculum_div_one = CurriculumDivision.objects.create(name=settings.DEFAULT_CURRICULUM_DIVISION)
         self.curriculum_div_two = CurriculumDivision.objects.create(name="두컵 커리큘럼")
         self.curriculum_one = Curriculum.objects.create(
+            founder=self.founder,
             title="커리큘럼 첫번째",
             password="1",
-            division=self.curriculum_div_one.id,
+            division=self.curriculum_div_one,
             subject="이곳은 첫번째 커리큘럼의 주제이다.",
             public=True,
             contents="이곳은 첫번째 커리큘럼의 내용이라고 할 수 있다.",
@@ -34,45 +45,48 @@ class EducationTests(APITestCase):
             end_date="2021-02-22 10:00:00"
         )
         self.curriculum_two = Curriculum.objects.create(
+            founder=self.founder,
             title="커리큘럼 두번째",
             password="1",
-            division=self.curriculum_div_two.id,
+            division=self.curriculum_div_two,
             subject="이곳은 두번째 커리큘럼의 주제이다.",
             public=True,
             contents="이곳은 두번째 커리큘럼의 내용이라고 할 수 있다.",
             start_date="2020-12-22 10:00:00",
             end_date="2021-02-22 10:00:00"
         )
-        self.curriculum_one.set_password('123123')
-        self.curriculum_two.set_password('456456')
-        self.curriculum_one.save()
-        self.curriculum_two.save()
-        self.lecture_div_one = LectureDivision.objects.create(name="한컵 강의")
+        self.lecture_div_one = LectureDivision.objects.create(name=settings.DEFAULT_LECTURE_DIVISION)
         self.lecture_div_two = LectureDivision.objects.create(name="두컵 강의")
         self.lecture_one = Lecture.objects.create(
+            founder=self.founder,
             title="강좌 첫번째",
-            category=self.lecture_div_one.id,
-            difficult="Deep",
+            division=self.lecture_div_one,
+            difficulty="Deep",
             public=True,
             contents="이곳은 첫번째 강좌의 내용이라고 할 수 있다."
         )
         self.lecture_two = Lecture.objects.create(
+            founder=self.founder,
             title="강좌 두번째",
-            category=self.lecture_div_two.id,
-            difficult="Basic",
+            division=self.lecture_div_two,
+            difficulty="Basic",
             public=True,
             contents="이곳은 두번째 강좌의 내용이라고 할 수 있다."
         )
         self.lesson_one = Lesson.objects.create(
+            founder=self.founder,
             title="강의 첫번째",
-            lecture=self.lecture_one.id,
+            lecture=self.lecture_one,
             url="https://www.youtube.com/watch?v=5qap5aO4i9A",
+            duration=10,
             contents="여기는 첫번째 강의의 내용이라고 할 수 있다."
         )
         self.lesson_two = Lesson.objects.create(
+            founder=self.founder,
             title="강의 두번째",
-            lecture=self.lecture_one.id,
+            lecture=self.lecture_one,
             url="https://www.youtube.com/watch?v=5qap5aO4i9A",
+            duration=10,
             contents="여기는 첫번째 강의의 내용이라고 할 수 있다."
         )
         self.student = CustomUser.objects.create(
@@ -82,40 +96,52 @@ class EducationTests(APITestCase):
             name='imtest',
         )
         self.progress = CurriculumProgress.objects.create(
-            student=self.student.id,
-            curriculum=self.curriculum_one.id,
-            lesson=self.lesson_one.id
+            student=self.student,
+            curriculum=self.curriculum_one,
+            lesson=self.lesson_one,
+            date='2020-12-12 00:00:00'
         )
         self.student.set_password('123123')
         self.student.save()
 
+        CurriculumStudent.objects.create(
+            student=self.student,
+            curriculum=self.curriculum_one,
+            reg_date='2020-12-12 00:00:00'
+        )
+        CurriculumStudent.objects.create(
+            student=self.student,
+            curriculum=self.curriculum_two,
+            reg_date='2020-12-12 00:00:00'
+        )
+
     """
     테스트 시작
     -----------------------------------------------------------
-    curriculum 분류를 삭제하면 curriculum 사라지는지
+    founder 삭제하면 curriculum, lecture, lesson 사라지는지
+    -----------------------------------------------------------
+    """
+    def test_founder_delete(self):
+        self.founder.delete()
+        assert Curriculum.objects.count() == 0
+        assert Lecture.objects.count() == 0
+        assert Lesson.objects.count() == 0
+    """
+    curriculum 분류를 삭제하면 curriculum 분류 기본값으로 가는지
     """
     def test_curriculum_div_delete(self):
-        self.curriculum_div_one.delete()
-        assert Curriculum.objects.count() == 1
-
         self.curriculum_div_two.delete()
-        assert Curriculum.objects.count() == 0
+        self.assertEqual(self.curriculum_two.division, self.curriculum_div_one.id)
     """
-    lecture 분류를 삭제하면 lecture 사라지는지
-    lecture 삭제하면 lesson 사라지는지
+    lecture 분류를 삭제하면 lecture 기본값으로 가는지
+    lecture 삭제하면 lesson 삭제되는지
     """
     def test_lecture_div_delete(self):
-        self.lecture_div_one.delete()
-        assert Lecture.objects.count() == 1
-
-        self.lecture_dive_two.delete()
-        assert Lecture.objects.count() == 0
+        self.lecture_div_two.delete()
+        self.assertEqual(self.lecture_two.division, self.lecture_div_one.id)
 
     def test_lecture_delete(self):
         self.lecture_one.delete()
-        assert Lesson.objects.count() == 1
-
-        self.lecture_two.delete()
         assert Lesson.objects.count() == 0
     """
     관계 table 확인
@@ -126,15 +152,13 @@ class EducationTests(APITestCase):
     student 삭제
     """
     def test_curriculum_student_delete(self):
-        self.curriculum_one.students.add(self.student.id)
-        self.curriculum_two.students.add(self.student.id)
         curriculum_id = self.curriculum_one.id
         self.curriculum_one.delete()
         self.assertFalse(CurriculumStudent.objects.filter(curriculum_id=curriculum_id).exists())
 
         student_id = self.student.id
         self.student.delete()
-        self.assertFalse(CurriculumStudent.objects.filter(user_id=student_id).exists())
+        self.assertFalse(CurriculumStudent.objects.filter(student_id=student_id).exists())
     """
     curriculum - lecture 관계 table
 

@@ -113,7 +113,7 @@ class CustomUser(AbstractBaseUser):
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)  # a admin user; non super-user
     is_admin = models.BooleanField(default=False)
-    reg_time = models.DateTimeField(_('가입시간'), auto_now_add=True)
+    reg_date = models.DateTimeField(_('가입일'), auto_now_add=True)
 
     USERNAME_FIELD = 'user_id'
     REQUIRED_FIELDS = ['name', 'email', 'nickname']
@@ -143,7 +143,7 @@ class CustomUser(AbstractBaseUser):
         return f'{self.user_id}'
 
     class Meta:
-        ordering = ['reg_time', ]
+        ordering = ['reg_date', ]
         db_table = 'cert_custom_user'
         verbose_name = '유저'
         verbose_name_plural = '유저들'

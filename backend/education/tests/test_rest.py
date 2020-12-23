@@ -1,4 +1,5 @@
 from django.urls import reverse
+from django.conf import settings
 from rest_framework import status
 from rest_framework.test import APITestCase
 from education.models import (
@@ -10,7 +11,7 @@ from education.serializers import (
     CurriculumSerializer, CurriculumStudentSerializer, LectureSerializer,
     LessonSerializer
 )
-from cert.models import CustomUser
+from cert.models import CustomUser, CustomGroup
 
 
 def removekey(d, key):
@@ -21,6 +22,7 @@ def removekey(d, key):
 
 class EducationRestTests(APITestCase):
     def setUp(self):
+        CustomGroup.objects.create(name=settings.DEFAULT_GROUP, description='')
         self.adminuser = CustomUser.objects.create_superuser(  # auth를 위한 dummy admin 생성
             "admintest",
             "admintest@admintest.com",
@@ -28,23 +30,33 @@ class EducationRestTests(APITestCase):
             "adminnick",
             "admintest"
         )
+        self.founder = CustomUser.objects.create(
+            password='1',
+            user_id='imfounder',
+            email='dev@dev123.com',
+            name='imfounder',
+            nickname='imfounder'
+        )
         self.student_one = CustomUser.objects.create(
             password='1',
             user_id='testuser',
             email='dev@dev.com',
             name='imtest',
+            nickname='imtest1'
         )
         self.student_two = CustomUser.objects.create(
             password='1',
             user_id='testuser2',
             email='dev2@dev.com',
             name='imtest2',
+            nickname='imtest2'
         )
         self.client.login(username='admintest', password='admintest')
         self.curriculum_div_one = CurriculumDivision.objects.create(name='한컵 커리')
         self.curriculum_div_two = CurriculumDivision.objects.create(name='두컵 커리')
         self.curriculum_one = Curriculum.objects.create(
             title="커리큘럼 첫번째",
+            founder=self.founder.id,
             password="1",
             division=self.curriculum_div_one.id,
             subject="이곳은 첫번째 커리큘럼의 주제이다.",
@@ -55,6 +67,7 @@ class EducationRestTests(APITestCase):
         )
         self.curriculum_two = Curriculum.objects.create(
             title="커리큘럼 두번째",
+            founder=self.founder.id,
             password="1",
             division=self.curriculum_div_two.id,
             subject="이곳은 두번째 커리큘럼의 주제이다.",
@@ -67,6 +80,7 @@ class EducationRestTests(APITestCase):
         self.lecture_div_two = LectureDivision.objects.create(name="두컵 강의")
         self.lecture_one = Lecture.objects.create(
             title="강좌 첫번째",
+            founder=self.founder.id,
             category=self.lecture_div_one.id,
             difficult="심화",
             public=True,
@@ -74,6 +88,7 @@ class EducationRestTests(APITestCase):
         )
         self.lecture_two = Lecture.objects.create(
             title="강좌 두번째",
+            founder=self.founder.id,
             category=self.lecture_div_two.id,
             difficult="기초",
             public=True,
