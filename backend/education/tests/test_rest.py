@@ -6,8 +6,17 @@ from education.models import (
     LectureDivision, Lesson, CurriculumLecture,
     CurriculumStudent, CurriculumProgress
 )
-from education.serializers import CurriculumSerializer, CurriculumStudentSerializer, LectureSerializer
+from education.serializers import (
+    CurriculumSerializer, CurriculumStudentSerializer, LectureSerializer,
+    LessonSerializer
+)
 from cert.models import CustomUser
+
+
+def removekey(d, key):
+    r = dict(d)
+    del r[key]
+    return r
 
 
 class EducationRestTests(APITestCase):
@@ -86,6 +95,24 @@ class EducationRestTests(APITestCase):
             end_date='2020-12-31 00:00:00',
             ordering=2,
         )
+        self.lesson_one = Lesson.objects.create(
+            title='lesson1 타이틀',
+            lecture_id=self.lecture_one.id,
+            url="https://www.youtube.com/watch?v=5qap5aO4i9A",
+            ordering=1,
+        )
+        self.lesson_two = Lesson.objects.create(
+            title='lesson2 타이틀',
+            lecture_id=self.lecture_one.id,
+            url="https://www.youtube.com/watch?v=5qap5aO4i9A",
+            ordering=2
+        )
+        self.progress = CurriculumProgress.objects.create(
+            student=self.student_one.id,
+            curriculum=self.curriculum_one.id,
+            lesson=self.lesson_one.id,
+            date='2020-12-22 00:00:00'
+        )
 
     """
     -------------------------------------------------------------------------
@@ -108,6 +135,38 @@ class EducationRestTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Curriculum.objects.count(), 3)
 
+    def test_create_curriculum_ackward(self):
+        url = reverse('curriculum_without_pk')
+        data = {
+            'title': '첫번째 커리큘럼 테스트',
+            'division': self.curriculum_div_one.id,
+            'subject': '첫번째 커리큘럼 테스트의 주제입니다. 안녕하세요',
+            'public': False,
+            'password': '123123',
+            'contents': '첫번째 커리큘럼의 내용입니다. 안녕안녕안녕안녕하세요요요요요',
+            'start_date': '2020-12-22 10:00:00',
+            'end_date': '2021-01-11 10:00:00'
+        }
+        ackward_data = removekey(data, 'title')
+        response = self.client.post(url, ackward_data, format='json')  # no title
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        ackward_data = removekey(data, 'division')
+        response = self.client.post(url, ackward_data, format='json')  # no division
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        ackward_data = removekey(data, 'subject')
+        response = self.client.post(url, ackward_data, format='json')  # no subject
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        ackward_data = removekey(data, 'start_date')
+        response = self.client.post(url, ackward_data, format='json')  # no start_date
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        ackward_data = removekey(data, 'end_date')
+        response = self.client.post(url, ackward_data, format='json')  # no end_date
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
     def test_create_curriculum_no_password_but_public(self):  # 공개 curriculum
         url = reverse('curriculum_without_pk')
         data = {
@@ -122,76 +181,6 @@ class EducationRestTests(APITestCase):
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Curriculum.objects.count(), 3)
-
-    def test_create_curriculum_no_title(self):  # title parameter 없음
-        url = reverse('curriculum_without_pk')
-        data = {
-            'division': self.curriculum_div_one.id,
-            'subject': '첫번째 커리큘럼 테스트의 주제입니다. 안녕하세요',
-            'public': False,
-            'password': '123123',
-            'contents': '첫번째 커리큘럼의 내용입니다. 안녕안녕안녕안녕하세요요요요요',
-            'start_date': '2020-12-22 10:00:00',
-            'end_date': '2021-01-11 10:00:00'
-        }
-        response = self.client.post(url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
-    def test_create_curriculum_no_subject(self):  # subject parameter 없음
-        url = reverse('curriculum_without_pk')
-        data = {
-            'title': '첫번째 커리큘럼 테스트',
-            'division': self.curriculum_div_one.id,
-            'public': False,
-            'password': '123123',
-            'contents': '첫번째 커리큘럼의 내용입니다. 안녕안녕안녕안녕하세요요요요요',
-            'start_date': '2020-12-22 10:00:00',
-            'end_date': '2021-01-11 10:00:00'
-        }
-        response = self.client.post(url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
-    def test_create_curriculum_no_div(self):  # division parameter 없음
-        url = reverse('curriculum_without_pk')
-        data = {
-            'title': '첫번째 커리큘럼 테스트',
-            'subject': '첫번째 커리큘럼 테스트의 주제입니다. 안녕하세요',
-            'public': False,
-            'password': '123123',
-            'contents': '첫번째 커리큘럼의 내용입니다. 안녕안녕안녕안녕하세요요요요요',
-            'start_date': '2020-12-22 10:00:00',
-            'end_date': '2021-01-11 10:00:00'
-        }
-        response = self.client.post(url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
-    def test_create_curriculum_no_start_date(self):  # start_date parameter 없음
-        url = reverse('curriculum_without_pk')
-        data = {
-            'title': '첫번째 커리큘럼 테스트',
-            'division': self.curriculum_div_one.id,
-            'subject': '첫번째 커리큘럼 테스트의 주제입니다. 안녕하세요',
-            'public': False,
-            'password': '123123',
-            'contents': '첫번째 커리큘럼의 내용입니다. 안녕안녕안녕안녕하세요요요요요',
-            'end_date': '2021-01-11 10:00:00'
-        }
-        response = self.client.post(url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
-    def test_create_curriculum_no_end_date(self):  # end_date parameter 없음
-        url = reverse('curriculum_without_pk')
-        data = {
-            'title': '첫번째 커리큘럼 테스트',
-            'division': self.curriculum_div_one.id,
-            'subject': '첫번째 커리큘럼 테스트의 주제입니다. 안녕하세요',
-            'public': False,
-            'password': '123123',
-            'contents': '첫번째 커리큘럼의 내용입니다. 안녕안녕안녕안녕하세요요요요요',
-            'start_date': '2020-12-22 10:00:00',
-        }
-        response = self.client.post(url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_create_curriculum_start_bigger_than_end(self):  # 시작일이 종료일보다 큼
         url = reverse('curriculum_without_pk')
@@ -365,7 +354,8 @@ class EducationRestTests(APITestCase):
             'curriculum_id': self.curriculum_two.id,
             'lecture_id': self.lecture_one.id,
             'start_date': '2020-12-22 00:00:00',
-            'end_date': '2020-12-31 00:00:00'
+            'end_date': '2020-12-31 00:00:00',
+            'ordering': 2,
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -376,7 +366,8 @@ class EducationRestTests(APITestCase):
             'curriculum_id': self.curriculum_two.id,
             'lecture_id': self.lecture_one.id,
             'start_date': '2020-12-31 00:00:00',
-            'end_date': '2020-12-22 00:00:00'
+            'end_date': '2020-12-22 00:00:00',
+            'ordering': 2,
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -387,6 +378,7 @@ class EducationRestTests(APITestCase):
             'curriculum_id': self.curriculum_two.id,
             'lecture_id': self.lecture_one.id,
             'start_date': '2020-12-31 00:00:00',
+            'ordering': 2,
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -396,7 +388,8 @@ class EducationRestTests(APITestCase):
         data = {
             'curriculum_id': self.curriculum_two.id,
             'lecture_id': self.lecture_one.id,
-            'end_date': '2020-12-22 00:00:00'
+            'end_date': '2020-12-22 00:00:00',
+            'ordering': 2,
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -406,12 +399,24 @@ class EducationRestTests(APITestCase):
         data = {
             'lecture_id': self.lecture_one.id,
             'start_date': '2020-12-22 00:00:00',
-            'end_date': '2020-12-31 00:00:00'
+            'end_date': '2020-12-31 00:00:00',
+            'ordering': 2,
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_curriculum_charge_lecture_no_lecture(self):
+        url = reverse('curriculum_lecture_without_pk')
+        data = {
+            'curriculum_id': self.curriculum_two.id,
+            'start_date': '2020-12-22 00:00:00',
+            'end_date': '2020-12-31 00:00:00',
+            'ordering': 2,
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_curriculum_charge_lecture_no_ordering(self):
         url = reverse('curriculum_lecture_without_pk')
         data = {
             'curriculum_id': self.curriculum_two.id,
@@ -432,11 +437,101 @@ class EducationRestTests(APITestCase):
         self.assertEqual(len(response.data), 2)
 
     def test_lecture_detail(self):
-        url = reverse('lecture_with_pk')
-        response = self.client.get(url, kwargs={'pk': self.lecture_one.id})
+        url = reverse('lecture_with_pk', kwargs={'pk': self.lecture_one.id})
+        response = self.client.get(url)
         serialized_lecture = LectureSerializer(self.lecture_one).data
-        self.assertEqual(response.status_data, serialized_lecture)
+        self.assertEqual(response.data, serialized_lecture)
 
     def test_lecture_lesson(self):
-        url = reverse('lecture_with_pk')
-        response = self.client.get(url, kwargs={'pk': self.lecture_one.id})
+        url = reverse('lecture_with_pk', kwargs={'pk': self.lecture_one.id})
+        response = self.client.get(url)
+        serialized_lesson = LessonSerializer(self.lesson_one).data
+        self.assertEqual(response.data['lessons'], serialized_lesson)
+
+    """
+    -------------------------------------------------------------------------
+    LECTURE PATCH TEST (CURRICULUM-LECTURE)
+    -------------------------------------------------------------------------
+    """
+    def test_lecture_patch_title(self):
+        url = reverse('lecture_with_pk', kwargs={'pk': self.lecture_one.id})
+        data = {'title': '첫번째 lecture'}
+        response = self.client.patch(url, data, format='json')
+        self.assertEqual(response.data['title'], self.lecture_one['title'])
+
+    def test_lecture_patch_category_ackward(self):
+        url = reverse('lecture_with_pk', kwargs={'pk': self.lecture_one.id})
+        data = {'catetory': 1249}
+        response = self.client.patch(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_lecture_delete(self):
+        url = reverse('lecture_with_pk', kwargs={'pk': self.lecture_one.id})
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+        self.assertFalse(CurriculumProgress.objects.filter(lecture_id=self.lecture_one.id).exists())
+        self.assertFalse(Lesson.objects.filter(lecture_id=self.lecture_one.id).exists())
+        assert CurriculumLecture.objects.count() == 1
+
+    """
+    -------------------------------------------------------------------------
+    LESSON POST TEST (LECTURE-LESSON)
+    -------------------------------------------------------------------------
+    """
+    def test_create_lesson(self):
+        url = reverse('lesson_without_pk')
+        data = {
+            'title': 'test lesson 타이틀',
+            'lecture_id': self.lecture_one.id,
+            'url': 'https://www.youtube.com/watch?v=5qap5aO4i9A',
+            'ordering': 2
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_create_lesson_ackward(self):
+        url = reverse('lesson_without_pk')
+        data = {
+            'title': 'test lesson 타이틀',
+            'lecture_id': self.lecture_one.id,
+            'url': 'https://www.youtube.com/watch?v=5qap5aO4i9A',
+            'ordering': 2
+        }
+        ackward_data = removekey(data, 'title')
+        response = self.client.post(url, ackward_data, format='json')  # no title
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        ackward_data = removekey(data, 'lecture_id')
+        response = self.client.post(url, ackward_data, format='json')  # no lecture_id
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        ackward_data = removekey(data, 'url')
+        response = self.client.post(url, ackward_data, format='json')  # no url
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        ackward_data = removekey(data, 'ordering')
+        response = self.client.post(url, ackward_data, format='json')  # no ordering
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    """
+    -------------------------------------------------------------------------
+    LESSON GET TEST (LECTURE-LESSON)
+    -------------------------------------------------------------------------
+    """
+    def test_lesson_list(self):
+        url = reverse('lesson_without_pk')
+        response = self.client.get(url)
+        self.assertEqual(len(response.data), 2)
+
+    def test_lesson_detail(self):
+        url = reverse('lesson_with_pk', kwargs={'pk': self.lesson_one.id})
+        response = self.client.get(url)
+        serialized_lesson = LessonSerializer(self.lesson_one).data
+        self.assertEqual(response.data, serialized_lesson)
+
+    def test_lesson_delete(self):
+        url = reverse('lesson_with_pk', kwargs={'pk': self.lesson_one.id})
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(CurriculumProgress.objects.filter(lesson_id=self.lesson_one.id).exists())
