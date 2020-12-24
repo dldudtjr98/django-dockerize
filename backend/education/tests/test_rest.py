@@ -22,7 +22,6 @@ def removekey(d, key):
 
 class EducationRestTests(APITestCase):
     def setUp(self):
-        CustomGroup.objects.create(name=settings.DEFAULT_GROUP, description='')
         self.adminuser = CustomUser.objects.create_superuser(  # auth를 위한 dummy admin 생성
             "admintest",
             "admintest@admintest.com",
@@ -56,9 +55,9 @@ class EducationRestTests(APITestCase):
         self.curriculum_div_two = CurriculumDivision.objects.create(name='두컵 커리')
         self.curriculum_one = Curriculum.objects.create(
             title="커리큘럼 첫번째",
-            founder=self.founder.id,
+            founder=self.founder,
             password="1",
-            division=self.curriculum_div_one.id,
+            division=self.curriculum_div_one,
             subject="이곳은 첫번째 커리큘럼의 주제이다.",
             public=True,
             contents="이곳은 첫번째 커리큘럼의 내용이라고 할 수 있다.",
@@ -67,9 +66,9 @@ class EducationRestTests(APITestCase):
         )
         self.curriculum_two = Curriculum.objects.create(
             title="커리큘럼 두번째",
-            founder=self.founder.id,
+            founder=self.founder,
             password="1",
-            division=self.curriculum_div_two.id,
+            division=self.curriculum_div_two,
             subject="이곳은 두번째 커리큘럼의 주제이다.",
             public=True,
             contents="이곳은 두번째 커리큘럼의 내용이라고 할 수 있다.",
@@ -80,52 +79,56 @@ class EducationRestTests(APITestCase):
         self.lecture_div_two = LectureDivision.objects.create(name="두컵 강의")
         self.lecture_one = Lecture.objects.create(
             title="강좌 첫번째",
-            founder=self.founder.id,
-            category=self.lecture_div_one.id,
-            difficult="심화",
+            founder=self.founder,
+            division=self.lecture_div_one,
+            difficulty="심화",
             public=True,
             contents="이곳은 첫번째 강좌의 내용이라고 할 수 있다."
         )
         self.lecture_two = Lecture.objects.create(
             title="강좌 두번째",
-            founder=self.founder.id,
-            category=self.lecture_div_two.id,
-            difficult="기초",
+            founder=self.founder,
+            division=self.lecture_div_two,
+            difficulty="기초",
             public=True,
             contents="이곳은 두번째 강좌의 내용이라고 할 수 있다."
         )
         self.curriculum_one.students.add(self.student_one.id)
         self.curriculum_one.students.add(self.student_two.id)
         CurriculumLecture.objects.create(
-            curriculum_id=self.curriculum_one.id,
-            lecture_id=self.lecture_one.id,
+            curriculum=self.curriculum_one,
+            lecture=self.lecture_one,
             start_date='2020-12-22 00:00:00',
             end_date='2020-12-31 00:00:00',
             ordering=1,
         )
         CurriculumLecture.objects.create(
-            curriculum_id=self.curriculum_one.id,
-            lecture_id=self.lecture_two.id,
+            curriculum=self.curriculum_one,
+            lecture=self.lecture_two,
             start_date='2020-12-22 00:00:00',
             end_date='2020-12-31 00:00:00',
             ordering=2,
         )
         self.lesson_one = Lesson.objects.create(
             title='lesson1 타이틀',
-            lecture_id=self.lecture_one.id,
+            founder=self.founder,
+            lecture=self.lecture_one,
             url="https://www.youtube.com/watch?v=5qap5aO4i9A",
+            duration=15,
             ordering=1,
         )
         self.lesson_two = Lesson.objects.create(
             title='lesson2 타이틀',
-            lecture_id=self.lecture_one.id,
+            founder=self.founder,
+            lecture=self.lecture_one,
             url="https://www.youtube.com/watch?v=5qap5aO4i9A",
+            duration=15,
             ordering=2
         )
         self.progress = CurriculumProgress.objects.create(
-            student=self.student_one.id,
-            curriculum=self.curriculum_one.id,
-            lesson=self.lesson_one.id,
+            student=self.student_one,
+            curriculum=self.curriculum_one,
+            lesson=self.lesson_one,
             date='2020-12-22 00:00:00'
         )
 
@@ -137,6 +140,7 @@ class EducationRestTests(APITestCase):
     def test_create_curriculum(self):  # 정상 parameter curriculum
         url = reverse('curriculum_without_pk')
         data = {
+            'founder': self.founder.id,
             'title': '첫번째 커리큘럼 테스트',
             'division': self.curriculum_div_one.id,
             'subject': '첫번째 커리큘럼 테스트의 주제입니다. 안녕하세요',
@@ -153,6 +157,7 @@ class EducationRestTests(APITestCase):
     def test_create_curriculum_ackward(self):
         url = reverse('curriculum_without_pk')
         data = {
+            'founder': self.founder.id,
             'title': '첫번째 커리큘럼 테스트',
             'division': self.curriculum_div_one.id,
             'subject': '첫번째 커리큘럼 테스트의 주제입니다. 안녕하세요',
@@ -162,6 +167,10 @@ class EducationRestTests(APITestCase):
             'start_date': '2020-12-22 10:00:00',
             'end_date': '2021-01-11 10:00:00'
         }
+        ackward_data = removekey(data, 'founder')
+        response = self.client.post(url, ackward_data, format='json')  # no founder
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
         ackward_data = removekey(data, 'title')
         response = self.client.post(url, ackward_data, format='json')  # no title
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -185,6 +194,7 @@ class EducationRestTests(APITestCase):
     def test_create_curriculum_no_password_but_public(self):  # 공개 curriculum
         url = reverse('curriculum_without_pk')
         data = {
+            'founder': self.founder.id,
             'title': '첫번째 커리큘럼 테스트',
             'division': self.curriculum_div_one.id,
             'subject': '첫번째 커리큘럼 테스트의 주제입니다. 안녕하세요',
@@ -200,6 +210,7 @@ class EducationRestTests(APITestCase):
     def test_create_curriculum_start_bigger_than_end(self):  # 시작일이 종료일보다 큼
         url = reverse('curriculum_without_pk')
         data = {
+            'founder': self.founder.id,
             'title': '첫번째 커리큘럼 테스트',
             'division': self.curriculum_div_one.id,
             'subject': '첫번째 커리큘럼 테스트의 주제입니다. 안녕하세요',
@@ -215,6 +226,7 @@ class EducationRestTests(APITestCase):
     def test_create_curriculum_private_but_no_password(self):  # 비공개지만 패스워드가 없음
         url = reverse('curriculum_without_pk')
         data = {
+            'founder': self.founder.id,
             'title': '첫번째 커리큘럼 테스트',
             'division': self.curriculum_div_one.id,
             'subject': '첫번째 커리큘럼 테스트의 주제입니다. 안녕하세요',
@@ -529,6 +541,9 @@ class EducationRestTests(APITestCase):
         response = self.client.post(url, ackward_data, format='json')  # no ordering
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+        data['url'] = 'url아닌 무언가'
+        response = self.client.post(url, data, format='json')  # ackward url
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
     """
     -------------------------------------------------------------------------
     LESSON GET TEST (LECTURE-LESSON)
@@ -545,8 +560,41 @@ class EducationRestTests(APITestCase):
         serialized_lesson = LessonSerializer(self.lesson_one).data
         self.assertEqual(response.data, serialized_lesson)
 
+    """
+    -------------------------------------------------------------------------
+    LESSON PATCH TEST (LECTURE-LESSON)
+    -------------------------------------------------------------------------
+    """
+    def test_lesson_change_title(self):
+        url = reverse('lesson_with_pk', kwargs={'pk': self.lesson_one.id})
+        data = {
+            'title': '바뀐 레슨'
+        }
+        response = self.client.patch(url, data, format='json')
+        self.assertEqual(response.data['title'], '바뀐 레슨')
+
+    def test_lesson_change_ackward_url(self):
+        url = reverse('lesson_with_pk', kwargs={'pk': self.lesson_one.id})
+        data = {
+            'url': '이상한 url'
+        }
+        response = self.client.patch(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    """
+    -------------------------------------------------------------------------
+    LESSON DELETE TEST (LECTURE-LESSON)
+    -------------------------------------------------------------------------
+    """
     def test_lesson_delete(self):
         url = reverse('lesson_with_pk', kwargs={'pk': self.lesson_one.id})
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(CurriculumProgress.objects.filter(lesson_id=self.lesson_one.id).exists())
+
+    def test_curriculum_div_detele(self):  # div 삭제 시
+        url = reverse('curriculum_div_with_pk', kwargs={'pk': self.curriculum_div_one.id})
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+        self.assertFalse(Curriculum.objects.filter(curriculum_id=self.curriculum_one.id).exists())

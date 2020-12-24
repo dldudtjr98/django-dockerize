@@ -23,7 +23,6 @@ class EducationTests(APITestCase):
     student를 만듬 (member)
     """
     def setUp(self):
-        CustomGroup.objects.create(name=settings.DEFAULT_GROUP, description='')
         self.founder = CustomUser.objects.create(
             password='1',
             user_id='founder',
@@ -79,6 +78,7 @@ class EducationTests(APITestCase):
             lecture=self.lecture_one,
             url="https://www.youtube.com/watch?v=5qap5aO4i9A",
             duration=10,
+            ordering=1,
             contents="여기는 첫번째 강의의 내용이라고 할 수 있다."
         )
         self.lesson_two = Lesson.objects.create(
@@ -87,6 +87,7 @@ class EducationTests(APITestCase):
             lecture=self.lecture_one,
             url="https://www.youtube.com/watch?v=5qap5aO4i9A",
             duration=10,
+            ordering=2,
             contents="여기는 첫번째 강의의 내용이라고 할 수 있다."
         )
         self.student = CustomUser.objects.create(
@@ -99,7 +100,6 @@ class EducationTests(APITestCase):
             student=self.student,
             curriculum=self.curriculum_one,
             lesson=self.lesson_one,
-            date='2020-12-12 00:00:00'
         )
         self.student.set_password('123123')
         self.student.save()
@@ -107,12 +107,10 @@ class EducationTests(APITestCase):
         CurriculumStudent.objects.create(
             student=self.student,
             curriculum=self.curriculum_one,
-            reg_date='2020-12-12 00:00:00'
         )
         CurriculumStudent.objects.create(
             student=self.student,
             curriculum=self.curriculum_two,
-            reg_date='2020-12-12 00:00:00'
         )
 
     """
@@ -127,18 +125,8 @@ class EducationTests(APITestCase):
         assert Lecture.objects.count() == 0
         assert Lesson.objects.count() == 0
     """
-    curriculum 분류를 삭제하면 curriculum 분류 기본값으로 가는지
-    """
-    def test_curriculum_div_delete(self):
-        self.curriculum_div_two.delete()
-        self.assertEqual(self.curriculum_two.division, self.curriculum_div_one.id)
-    """
-    lecture 분류를 삭제하면 lecture 기본값으로 가는지
     lecture 삭제하면 lesson 삭제되는지
     """
-    def test_lecture_div_delete(self):
-        self.lecture_div_two.delete()
-        self.assertEqual(self.lecture_two.division, self.lecture_div_one.id)
 
     def test_lecture_delete(self):
         self.lecture_one.delete()
@@ -168,15 +156,15 @@ class EducationTests(APITestCase):
     """
     def test_curriculum_lecture_delete(self):
         CurriculumLecture.objects.create(
-            curriculum_id=self.curriculum_one.id,
-            lecture_id=self.lecture_one.id,
+            curriculum=self.curriculum_one,
+            lecture=self.lecture_one,
             start_date='2020-12-22 00:00:00',
             end_date='2020-12-31 00:00:00',
             ordering=1,
         )
         CurriculumLecture.objects.create(
-            curriculum_id=self.curriculum_one.id,
-            lecture_id=self.lecture_two.id,
+            curriculum=self.curriculum_one,
+            lecture=self.lecture_two,
             start_date='2020-12-22 00:00:00',
             end_date='2020-12-31 00:00:00',
             ordering=2,

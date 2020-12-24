@@ -8,7 +8,6 @@ from cert.serializers import CustomUserSerializer
 
 class MemberTests(APITestCase):
     def setUp(self):
-        self.first_group = CustomGroup.objects.create(name=settings.DEFAULT_GROUP, description='')
         self.second_group = CustomGroup.objects.create(name='랄라라', description='')
         self.adminuser = CustomUser.objects.create_superuser(  # auth를 위한 dummy admin 생성
             "admintest",
