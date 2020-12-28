@@ -128,6 +128,12 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.BasicAuthentication',
         'knox.auth.TokenAuthentication',
     ],
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '100/day',
+    }
 }
 
 SWAGGER_SETTINGS = {
