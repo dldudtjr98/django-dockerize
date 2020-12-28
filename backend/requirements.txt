@@ -12,3 +12,4 @@ django-filter
 drf-yasg
 Pillow
 pytest-django
+django-rest-knox

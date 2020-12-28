@@ -36,9 +36,9 @@ class Curriculum(models.Model):
         upload_to=thumbnail_directory_path,
         default=settings.THUMBNAIL_URL + settings.DEFAULT_THUMBNAIL_IMAGE
     )
-    subject = models.TextField(_('주제'), blank=True)
+    subject = models.TextField(_('주제'))
     public = models.BooleanField(_('공개여부'), default=True)
-    contents = models.TextField(_('내용'))
+    contents = models.TextField(_('내용'), blank=True)
     start_date = models.DateTimeField(_('시작시간'))
     end_date = models.DateTimeField(_('종료시간'))
     reg_date = models.DateTimeField(_('등록일'), auto_now_add=True)
@@ -78,12 +78,12 @@ class Lecture(models.Model):
         on_delete=models.CASCADE,
     )
     difficulty = models.CharField(_('난이도'), max_length=10, choices=DIFFICULTY_CHOICE)
-    goal = models.CharField(_('학습목표'), max_length=100)
-    method = models.TextField(_('학습방법'))
-    main_contents = models.CharField(_('주요 컨텐츠'), max_length=100)
-    effect = models.CharField(_('기대효과'), max_length=100)
+    goal = models.CharField(_('학습목표'), max_length=100, blank=True)
+    method = models.TextField(_('학습방법'), blank=True)
+    main_contents = models.CharField(_('주요 컨텐츠'), max_length=100, blank=True)
+    effect = models.CharField(_('기대효과'), max_length=100, blank=True)
     public = models.BooleanField(_('공개여부'), default=True)
-    contents = models.TextField(_('내용'))
+    contents = models.TextField(_('내용'), blank=True)
     reg_date = models.DateTimeField(_('등록일'), auto_now_add=True)
 
     objects = models.Manager()
@@ -97,11 +97,11 @@ class Lesson(models.Model):
     founder = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='lesson_founder')
     title = models.CharField(_('제목'), max_length=50, unique=True)
     lecture = models.ForeignKey(Lecture, on_delete=models.CASCADE)
-    outline = models.CharField(_('개요'), max_length=100)
+    outline = models.CharField(_('개요'), max_length=100, blank=True)
     url = models.URLField(_('영상 주소'))
     duration = models.IntegerField(_('강의 시간'))
     public = models.BooleanField(_('공개여부'), default=True)
-    contents = models.TextField(_('내용'))
+    contents = models.TextField(_('내용'), blank=True)
     ordering = models.IntegerField(_('순서'))
     reg_date = models.DateTimeField(_('등록일'), auto_now_add=True)
 

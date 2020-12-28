@@ -43,6 +43,7 @@ urlpatterns = [
     path('api/admin', admin.site.urls),
     path('api/snippets/', include('snippets.urls')),
     path('api/cert/', include('cert.urls')),
+    path('api/cert/', include('knox.urls')),
     path('api/education/', include('education.urls')),
     path('api/api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     # path('api/docs', docs_view),

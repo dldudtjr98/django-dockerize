@@ -1,9 +1,14 @@
 from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework import status
+from rest_framework import status, permissions
+from knox.models import AuthToken
+from knox.views import LoginView as KnoxLoginView
 from .models import CustomUser, CustomGroup, UserGroup
-from .serializers import CustomUserSerializer, CustomGroupSerializer, UserGroupSerializer
+from .serializers import (
+    CustomUserSerializer, CustomGroupSerializer, UserGroupSerializer,
+    LoginUserSerializer, CreateUserSerializer
+)
 
 
 class UserView(APIView):
@@ -38,8 +43,11 @@ class UserView(APIView):
     def post(self, request, format=None):
         serializer = CustomUserSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
-            return Response(status=status.HTTP_201_CREATED, data=serializer.data)
+            user = serializer.save()
+            return Response({
+                'user': serializer.data,
+                'token': AuthToken.objects.create(user)[1]
+            })
         return Response(status=status.HTTP_400_BAD_REQUEST, data=serializer.errors)
 
     def patch(self, request, pk, format=None):
@@ -107,3 +115,33 @@ class GroupView(APIView):
         group_object = self.get_object(pk)
         group_object.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class UserLoginView(KnoxLoginView):
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request):
+        serializer = LoginUserSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.validated_data
+            return Response({
+                'user': serializer.data['user_id'],
+                'token': AuthToken.objects.create(user)[1],
+            })
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST, data=serializer.errors)
+
+
+class UserRegisterView(APIView):
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request):
+        serializer = CreateUserSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            return Response({
+                'user': serializer.data,
+                'token': AuthToken.objects.create(user)[1],
+            })
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST, data=serializer.errors)

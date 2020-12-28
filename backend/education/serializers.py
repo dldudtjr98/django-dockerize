@@ -1,3 +1,4 @@
+from django.contrib.auth.hashers import make_password
 from rest_framework import serializers
 from .models import (
     Curriculum, CurriculumStudent, Lecture, Lesson,
@@ -7,9 +8,15 @@ from .models import (
 
 class CurriculumSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
+        if 'password' in validated_data:  # patch password
+            validated_data['password'] = make_password(validated_data['password'])
         curriculum = super().create(validated_data)
-        curriculum.set_password(validated_data['password'])
-        curriculum.save()
+        return curriculum
+
+    def update(self, instance, validated_data):
+        if 'password' in validated_data:  # patch password
+            validated_data['password'] = make_password(validated_data['password'])
+        curriculum = super().update(instance, validated_data)
         return curriculum
 
     def validate(self, data):
@@ -22,7 +29,12 @@ class CurriculumSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Curriculum
-        fields = '__all__'
+        exclude = ['password', ]
+
+
+class LectureSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Lecture
 
 
 class CurriculumDivisionSerializer(serializers.ModelSerializer):
@@ -34,11 +46,6 @@ class CurriculumDivisionSerializer(serializers.ModelSerializer):
 class CurriculumStudentSerializer(serializers.ModelSerializer):
     class Meta:
         model = CurriculumStudent
-
-
-class LectureSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Lecture
 
 
 class LectureDivisionSerializer(serializers.ModelSerializer):

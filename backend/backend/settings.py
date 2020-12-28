@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'snippets.apps.SnippetsConfig',
     'cert',
     'education',
+    'knox',
 ]
 
 MIDDLEWARE = [
@@ -123,6 +124,10 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ],
     'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.BasicAuthentication',
+        'knox.auth.TokenAuthentication',
+    ],
 }
 
 SWAGGER_SETTINGS = {
