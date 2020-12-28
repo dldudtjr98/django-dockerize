@@ -43,10 +43,9 @@ class UserView(APIView):
     def post(self, request, format=None):
         serializer = CustomUserSerializer(data=request.data)
         if serializer.is_valid():
-            user = serializer.save()
+            serializer.save()
             return Response({
-                'user': serializer.data,
-                'token': AuthToken.objects.create(user)[1]
+                'user': serializer.data
             })
         return Response(status=status.HTTP_400_BAD_REQUEST, data=serializer.errors)
 
@@ -138,10 +137,9 @@ class UserRegisterView(APIView):
     def post(self, request):
         serializer = CreateUserSerializer(data=request.data)
         if serializer.is_valid():
-            user = serializer.save()
+            serializer.save()
             return Response({
                 'user': serializer.data,
-                'token': AuthToken.objects.create(user)[1],
             })
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST, data=serializer.errors)
